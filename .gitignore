@@ -132,3 +132,4 @@ dmypy.json
 pcswpkgr/private/device_passwords.csv
 pcswpkgr/private/device_list.csv
 pcswpkgr/private/data.py
+pcswpkgr/private/papercut_software
