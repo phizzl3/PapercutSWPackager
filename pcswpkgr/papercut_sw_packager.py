@@ -75,8 +75,42 @@ def generate_batch():
     and use a try/except to restore it just in case something fails
     """
 
+    # Backup/Read clean config file
+    with open(f'{PAPERCUT / "config.properties"}', 'r') as config_file:
+        config_bak = config_file.read()
+
+
+    try:
+        
+        machine_info = []
+
+        with open(DEVICES, 'r') as device_list:
+            # Skip extra header
+            next(device_list)
+
+            devices_csv = csv.DictReader(device_list)
+
+            for line in devices_csv:
+                if 'Smart' not in line['Device type']:
+                    machine_info.append([
+                        line['Device'].replace('device\\', ''),
+                        line['Device groups'].replace('registration', '').strip('|')
+                    ])
+
+
+
+
+
+
+    except Exception as e:
+        print(e)
+        
+        with open(f'{PAPERCUT / "config.properties"}', 'w') as config_file:
+            config_file.write(config_bak)
+        print(' Clean config.properties file restored.')
+
+
 
 
 if __name__ == "__main__":
     generate_batch()
-    
