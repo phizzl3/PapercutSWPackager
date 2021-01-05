@@ -25,3 +25,20 @@ Notes:
 
 
 """
+
+
+import csv
+import shutil
+from pathlib import Path
+
+
+# Get relative paths for files and folders needed (README.md)
+# Unzipped folder containing PaperCut software files
+PAPERCUT = Path(__file__).resolve().parent / 'private' / 'papercut_software'
+# Device list from papercut
+DEVICES = Path(__file__).resolve().parent / 'private' / 'device_list.csv'
+# Admin-Generated device passwords list
+PASSWORDS = Path(__file__).resolve().parent / 'private' / 'device_passwords.csv'
+
+
+
