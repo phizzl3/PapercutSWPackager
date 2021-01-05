@@ -39,6 +39,44 @@ PAPERCUT = Path(__file__).resolve().parent / 'private' / 'papercut_software'
 DEVICES = Path(__file__).resolve().parent / 'private' / 'device_list.csv'
 # Admin-Generated device passwords list
 PASSWORDS = Path(__file__).resolve().parent / 'private' / 'device_passwords.csv'
+# User's Home / Downloads folder for output
+DOWNLOADS = Path.home() / 'Downloads'
 
 
 
+
+class Bundle():
+
+    def __init__(self):
+        pass
+
+
+    def get_hostname(self):
+        pass 
+
+
+    def check_password(self):
+        pass
+
+
+    def create_package(self):
+        pass
+
+
+    def zip_files(self):
+        pass
+
+
+    
+
+def generate_batch():
+    """
+    This needs to create a backup of the clean config file first
+    and use a try/except to restore it just in case something fails
+    """
+
+
+
+if __name__ == "__main__":
+    generate_batch()
+    
