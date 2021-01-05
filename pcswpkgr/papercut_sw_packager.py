@@ -82,7 +82,6 @@ def generate_batch():
 
     try:
         
-        machine_info = []
 
         with open(DEVICES, 'r') as device_list:
             # Skip extra header
@@ -90,14 +89,9 @@ def generate_batch():
 
             devices_csv = csv.DictReader(device_list)
 
-            for line in devices_csv:
-                if 'Smart' not in line['Device type']:
-                    machine_info.append([
-                        line['Device'].replace('device\\', ''),
-                        line['Device groups'].replace('registration', '').strip('|')
-                    ])
-
-
+            machine_info = [[line['Device'].replace('device\\', ''),
+                line['Device groups'].replace('registration', '').strip('|')]
+                for line in devices_csv if 'Smart' not in line['Device type']]
 
 
 
