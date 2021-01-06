@@ -31,6 +31,7 @@ import csv
 import shutil
 from pathlib import Path
 from private import data #NOTE: HAS VARS
+import copy
 
 
 # Get relative paths for files and folders needed (README.md)
@@ -75,7 +76,13 @@ class Bundle():
             if info: #NOTE: SKIP NONE VALUE (PWDS)
                 config = config.replace(field, f'{field}{info}')
 
-        
+        #NOTE: WRITE OUT TO FILE
+        with open(PAPERCUT / 'config.properties') as out_config:
+            
+            #NOTE: W/O NEW CONTENTS
+            out_config.write(config)
+
+
 
     def zip_files(self):
         pass
@@ -91,7 +98,10 @@ def generate_batch():
 
     # Backup/Read clean config file
     with open(f'{PAPERCUT / "config.properties"}', 'r') as config_file: #NOTE: GETS CLEAN CONFIG FILE
-        config_clean, config_bak = config_file.read(), config_file.read()
+        config_clean = config_file.read()
+
+        #NOTE: COPY 
+        config_bak = copy.deepcopy(config_clean)
 
 
     try:
@@ -130,6 +140,12 @@ def generate_batch():
 
             #NOTE: GEN PACKAGE
             machine.create_package(config_clean)
+
+            input()
+
+            #NOTE: REST CLEAN CONFIG
+            with open(PAPERCUT / 'config.properties', 'w') as restore_config:
+                restore_config.write(config_bak)
             
 
     #NOTE: EXEPTION IN CASE SOMETHING BREAKS
