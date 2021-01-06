@@ -93,6 +93,13 @@ def generate_batch():
                 line['Device groups'].replace('registration', '').strip('|')]
                 for line in devices_csv if 'Smart' not in line['Device type']]
 
+            
+
+        with open(PASSWORDS, 'r') as device_passwords:
+
+            passwords_csv = csv.DictReader(device_passwords)
+          
+            password_info = {line['Device']: line['Password'] for line in passwords_csv}
 
 
 
