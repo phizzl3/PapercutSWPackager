@@ -47,17 +47,17 @@ DOWNLOADS = Path.home() / 'Downloads'
 
 class Bundle():
 
-    def __init__(self, name, group):
+    def __init__(self, name, group): #NOTE: ASSIGNS NAME/HOST AND GROUP
         self.name = name
         self.group = group
 
 
 
-    def get_hostname(self):
-        pass 
+    # def get_hostname(self):
+    #     pass 
 
 
-    def get_password(self, passwords):
+    def get_password(self, passwords): #NOTE: GETS PASSWORD IF PRESENT, SETS NONE IF NOT
         self.password = passwords.get(self.name, None)
 
 
@@ -78,8 +78,8 @@ def generate_batch():
     """
 
     # Backup/Read clean config file
-    with open(f'{PAPERCUT / "config.properties"}', 'r') as config_file:
-        config_bak = config_file.read()
+    with open(f'{PAPERCUT / "config.properties"}', 'r') as config_file: #NOTE: GETS CLEAN CONFIG FILE
+        config_clean = config_file.read()
 
 
     try:
@@ -89,34 +89,40 @@ def generate_batch():
             # Skip extra header
             next(device_list)
 
-            devices_csv = csv.DictReader(device_list)
+            devices_csv = csv.DictReader(device_list) #NOTE: DICT OF LIST CSV
 
+            #NOTE: MAKES LIST OF NAME, GROUP FROM CSV IF IT ISN'T A SMARTSDK DEV
             machine_info = [[line['Device'].replace('device\\', ''),
                 line['Device groups'].replace('registration', '').strip('|')]
                 for line in devices_csv if 'Smart' not in line['Device type']]
 
             
-
+        #NOTE: PWDS FILE
         with open(PASSWORDS, 'r') as device_passwords:
-
+            
+            #NOTE: DICT OF CSV - EASIER TO WORK WITH
             passwords_csv = csv.DictReader(device_passwords)
-          
+
+            #NOTE: GEN DICT OF DEV: PWD FOR LATER
             password_info = {line['Device']: line['Password'] for line in passwords_csv}
 
 
-
+        #NOTE: LOOP THROUGH MACHINES LIST
         for name, group in machine_info:
-            
+
+            #NOTE: CREATE OBJECT W/ ATTRS
             machine = Bundle(name, group)
 
+
             
 
-
+    #NOTE: EXEPTION IN CASE SOMETHING BREAKS
     except Exception as e:
         print(e)
         
+        #NOTE: WRITE THE ORIGINAL CONFIG BACK IN CASE CHANGES WERE MADE
         with open(f'{PAPERCUT / "config.properties"}', 'w') as config_file:
-            config_file.write(config_bak)
+            config_file.write(config_clean)
         print(' Clean config.properties file restored.')
 
 
