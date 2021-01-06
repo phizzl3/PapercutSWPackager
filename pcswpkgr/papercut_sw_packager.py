@@ -32,6 +32,7 @@ import shutil
 from pathlib import Path
 from private import data #NOTE: HAS VARS
 import copy
+from tqdm import tqdm
 
 
 # Get relative paths for files and folders needed (README.md)
@@ -140,8 +141,8 @@ def generate_batch():
             password_info = {line['Device']: line['Password'] for line in passwords_csv}
 
 
-        #NOTE: LOOP THROUGH MACHINES LIST
-        for name, group in machine_info:
+        #NOTE: LOOP THROUGH MACHINES LIST   NOTE: STATUS? 
+        for name, group in tqdm(machine_info):
 
             #NOTE: CREATE OBJECT W/ ATTRS
             machine = Bundle(name, group)
