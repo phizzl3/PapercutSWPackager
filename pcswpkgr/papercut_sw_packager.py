@@ -47,16 +47,18 @@ DOWNLOADS = Path.home() / 'Downloads'
 
 class Bundle():
 
-    def __init__(self):
-        pass
+    def __init__(self, name, group):
+        self.name = name
+        self.group = group
+
 
 
     def get_hostname(self):
         pass 
 
 
-    def check_password(self):
-        pass
+    def get_password(self, passwords):
+        self.password = passwords.get(self.name, None)
 
 
     def create_package(self):
@@ -101,6 +103,13 @@ def generate_batch():
           
             password_info = {line['Device']: line['Password'] for line in passwords_csv}
 
+
+
+        for name, group in machine_info:
+            
+            machine = Bundle(name, group)
+
+            
 
 
     except Exception as e:
