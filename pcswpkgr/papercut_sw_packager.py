@@ -85,7 +85,18 @@ class Bundle():
 
 
     def zip_files(self):
-        pass
+        #NOTE: GET DIR
+
+
+        #NOTE: SET OUTPUT FOLDER
+
+
+        #NOTE: OUTPUT ZIP FILE
+        shutil.make_archive(
+            DOWNLOADS / 'PaperCut_Packages' / self.group.title() / self.name,
+            'zip',
+            PAPERCUT
+        )
 
 
     
@@ -141,7 +152,10 @@ def generate_batch():
             #NOTE: GEN PACKAGE
             machine.create_package(working_config)
 
-            # input()
+            #NOTE: ZIP THE FILES
+            machine.zip_files()
+
+   
 
             #NOTE: REST CLEAN CONFIG
             with open(PAPERCUT / 'config.properties', 'w') as restore_config:
