@@ -77,7 +77,7 @@ class Bundle():
                 config = config.replace(field, f'{field}{info}')
 
         #NOTE: WRITE OUT TO FILE
-        with open(PAPERCUT / 'config.properties') as out_config:
+        with open(PAPERCUT / 'config.properties', 'w') as out_config:
             
             #NOTE: W/O NEW CONTENTS
             out_config.write(config)
@@ -98,10 +98,10 @@ def generate_batch():
 
     # Backup/Read clean config file
     with open(f'{PAPERCUT / "config.properties"}', 'r') as config_file: #NOTE: GETS CLEAN CONFIG FILE
-        config_clean = config_file.read()
+        clean_config = config_file.read()
 
         #NOTE: COPY 
-        config_bak = copy.deepcopy(config_clean)
+        working_config = copy.deepcopy(clean_config)
 
 
     try:
@@ -139,13 +139,13 @@ def generate_batch():
             machine.get_password(password_info)
 
             #NOTE: GEN PACKAGE
-            machine.create_package(config_clean)
+            machine.create_package(working_config)
 
-            input()
+            # input()
 
             #NOTE: REST CLEAN CONFIG
             with open(PAPERCUT / 'config.properties', 'w') as restore_config:
-                restore_config.write(config_bak)
+                restore_config.write(clean_config)
             
 
     #NOTE: EXEPTION IN CASE SOMETHING BREAKS
@@ -154,7 +154,7 @@ def generate_batch():
         
         #NOTE: WRITE THE ORIGINAL CONFIG BACK IN CASE CHANGES WERE MADE
         with open(f'{PAPERCUT / "config.properties"}', 'w') as config_file:
-            config_file.write(config_bak)
+            config_file.write(clean_config)
         print(' Clean config.properties file restored.')
 
 
