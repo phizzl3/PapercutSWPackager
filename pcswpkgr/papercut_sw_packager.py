@@ -30,6 +30,7 @@ Notes:
 import csv
 import shutil
 from pathlib import Path
+from private import data #NOTE: HAS VARS
 
 
 # Get relative paths for files and folders needed (README.md)
@@ -61,9 +62,20 @@ class Bundle():
         self.password = passwords.get(self.name, None)
 
 
-    def create_package(self):
-        pass
+    def create_package(self, config):
+        
+        #NOTE REPLACE VALUES - WRITE OUT
+        for field, info in (
+            ('server-name=', data.SERVER),
+            ('server-port=', data.PORT),
+            ('admin-username=', data.USER),
+            ('admin-password=', self.password),
+            ('device-name=', self.name)
+        ):
+            if info: #NOTE: SKIP NONE VALUE (PWDS)
+                config = config.replace(field, f'{field}{info}')
 
+        
 
     def zip_files(self):
         pass
@@ -79,7 +91,7 @@ def generate_batch():
 
     # Backup/Read clean config file
     with open(f'{PAPERCUT / "config.properties"}', 'r') as config_file: #NOTE: GETS CLEAN CONFIG FILE
-        config_clean = config_file.read()
+        config_clean, config_bak = config_file.read(), config_file.read()
 
 
     try:
@@ -113,7 +125,11 @@ def generate_batch():
             #NOTE: CREATE OBJECT W/ ATTRS
             machine = Bundle(name, group)
 
+            #NOTE: GET PW IF PRESENT
+            machine.get_password(password_info)
 
+            #NOTE: GEN PACKAGE
+            machine.create_package(config_clean)
             
 
     #NOTE: EXEPTION IN CASE SOMETHING BREAKS
@@ -122,7 +138,7 @@ def generate_batch():
         
         #NOTE: WRITE THE ORIGINAL CONFIG BACK IN CASE CHANGES WERE MADE
         with open(f'{PAPERCUT / "config.properties"}', 'w') as config_file:
-            config_file.write(config_clean)
+            config_file.write(config_bak)
         print(' Clean config.properties file restored.')
 
 
