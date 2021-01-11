@@ -1,36 +1,16 @@
-#!/usr/bin/env python3
-
+#! /usr/bin/env python3
 """
-Notes: 
-* Needs (un)zipped folder with master (blank) software files
-* Needs a device list exported from PaperCut (private)
-* Needs a list of devices that have a password and what those are (private)
-* Probably set up for drag and drop to start
-* Skip Smart SDK devices
-
-- ask for software file or folder
-- check that needed files exist
-- get hostname
-- check to see if that hostname is listed to have a password
-    - get that password if so
-- replace fields in properties file
-    - hostname
-    - server ip address
-    - port
-    - user
-    - password
-- save that file
-- create zipped file with the hostname as the filename 
-- sort into folder sorted by school
-
-
+Creates individual software bundles for installing PaperCut on RICOH MFD's 
+and outputs .zip files to the user's Home / Downloads folder. Each .zip 
+file will have a custom name and config.properties file that matches that 
+specific machine's information and will be sorted into subfolders based 
+on the machine's location. 
 """
-
 
 import csv
 import shutil
 from pathlib import Path
-from private import data #NOTE: HAS VARS
+from private import data
 import copy
 from tqdm import tqdm
 
@@ -49,24 +29,46 @@ DOWNLOADS = Path.home() / 'Downloads'
 
 
 class Bundle():
-
-    def __init__(self, name, group): #NOTE: ASSIGNS NAME/HOST AND GROUP
+    """
+    Initialize objects and set name and group.
+    """
+    def __init__(self, name, group):
         self.name = name
         self.group = group
 
 
 
-    # def get_hostname(self):
-    #     pass 
 
+    def get_password(self, passwords):
+        """
+        Checks passwords dictionary for machine and sets associated 
+        password if found. If no password is found, sets to None.
 
-    def get_password(self, passwords): #NOTE: GETS PASSWORD IF PRESENT, SETS NONE IF NOT
+        Args:
+            passwords (Dict): Contains machine names and associated admin passwords. 
+                              {'machine': 'password'}
+
+        Returns:
+            self
+        """
         self.password = passwords.get(self.name, None)
 
+        return self
 
-    def create_package(self, config):
-        
-        #NOTE REPLACE VALUES - WRITE OUT
+
+    def create_package(self, config):  #TODO RENAME THIS TO GENERATE CONFIG
+        """
+        Generates 'config.properties' file with the needed information 
+        for the specific machine. 
+
+        Args:
+            config (Str): String containing the contents of the original 
+                          'config.properties' file to be updated and written out.
+
+        Returns:
+            self
+        """
+        # Find and replace fields with new values for machine
         for field, info in (
             ('server-name=', data.SERVER),
             ('server-port=', data.PORT),
@@ -74,70 +76,70 @@ class Bundle():
             ('admin-password=', self.password),
             ('device-name=', self.name)
         ):
-            if info: #NOTE: SKIP NONE VALUE (PWDS)
+            # Replace fields, skipping None values (passwords)
+            if info:
                 config = config.replace(field, f'{field}{info}')
 
-        #NOTE: WRITE OUT TO FILE
+        # Write contents out to disk for use in packaging bundle
         with open(PAPERCUT / 'config.properties', 'w') as out_config:
-            
-            #NOTE: W/O NEW CONTENTS
             out_config.write(config)
+
+        return self
 
 
 
     def zip_files(self):
-        #NOTE: GET DIR
+        """
+        Gets the contents of the 'papercut_software' folder (which should 
+        include an updated 'properties.config') and zips the contents to 
+        the user's Home / Downloads folder and sorts them into subfolders 
+        based on the machine's location.
 
-
-        #NOTE: SET OUTPUT FOLDER
-
-
-        #NOTE: OUTPUT ZIP FILE
+        Returns:
+            self
+        """
         shutil.make_archive(
             DOWNLOADS / 'PaperCut_Packages' / self.group.title() / self.name,
             'zip',
             PAPERCUT
         )
 
+        return self
 
     
 
 def generate_batch():
     """
-    This needs to create a backup of the clean config file first
-    and use a try/except to restore it just in case something fails
+    Main script - Reads the clean 'properties.config' file from the 'papercut_software' 
+    folder and creates a working copy to use with the class methods so that a clean 
+    copy can be used each loop or restored if something crashes and then calls the methods 
+    to get all of the specific info, generate the config file, and then output the final, 
+    sorted .zip file bundles.
     """
-
-    # Backup/Read clean config file
-    with open(f'{PAPERCUT / "config.properties"}', 'r') as config_file: #NOTE: GETS CLEAN CONFIG FILE
+    # Read clean config file
+    with open(f'{PAPERCUT / "config.properties"}', 'r') as config_file:
         clean_config = config_file.read()
-
-        #NOTE: COPY 
+        # Make a working copy of the config        
         working_config = copy.deepcopy(clean_config)
 
 
-    try:
-        
-
+    try:        
+        # Open the device list and set up a Dict reader
         with open(DEVICES, 'r') as device_list:
             # Skip extra header
             next(device_list)
+            devices_csv = csv.DictReader(device_list)
 
-            devices_csv = csv.DictReader(device_list) #NOTE: DICT OF LIST CSV
-
-            #NOTE: MAKES LIST OF NAME, GROUP FROM CSV IF IT ISN'T A SMARTSDK DEV
+            # Make a list of name and group from the CSV file, skipping SmartSDK Devices
             machine_info = [[line['Device'].replace('device\\', ''),
                 line['Device groups'].replace('registration', '').strip('|')]
                 for line in devices_csv if 'Smart' not in line['Device type']]
 
-            
-        #NOTE: PWDS FILE
+        # Open the passwords file and set up a Dict Reader            
         with open(PASSWORDS, 'r') as device_passwords:
-            
-            #NOTE: DICT OF CSV - EASIER TO WORK WITH
             passwords_csv = csv.DictReader(device_passwords)
 
-            #NOTE: GEN DICT OF DEV: PWD FOR LATER
+            # Generate a dictionary of the names and passowords to ease my life
             password_info = {line['Device']: line['Password'] for line in passwords_csv}
 
 
