@@ -53,7 +53,7 @@ class Bundle():
 
         return self
 
-    def create_package(self, config):  # TODO RENAME THIS TO GENERATE CONFIG
+    def generate_config(self, config):
         """
         Generates 'config.properties' file with the needed information 
         for the specific machine. 
@@ -137,16 +137,15 @@ def generate_batch():
                              for line in passwords_csv}
 
         # Loop through the machines and display status bar
-        print(
-            f'\n Generating software packages for {len(machine_info)} machines...')
+        print(f'\n Generating software packages for {len(machine_info)} machines...')
         for name, group in tqdm(machine_info):
 
             # Set up objects
             machine = Bundle(name, group)
 
             # Get password, generate config file, and output zip files
-            machine.get_password(password_info).create_package(
-                working_config).zip_files()
+            machine.get_password(password_info)
+            machine.generate_config(working_config).zip_files()
 
             # Restore clean 'config.properties' file for next time
             with open(PAPERCUT / 'config.properties', 'w') as restore_config:
