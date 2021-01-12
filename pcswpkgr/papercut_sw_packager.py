@@ -7,13 +7,14 @@ specific machine's information and will be sorted into subfolders based
 on the machine's location. 
 """
 
+import copy
 import csv
 import shutil
 from pathlib import Path
-from private import data
-import copy
+
 from tqdm import tqdm
 
+from private import data
 
 # Get relative paths for files and folders needed (README.md)
 # Unzipped folder containing PaperCut software files
@@ -21,23 +22,20 @@ PAPERCUT = Path(__file__).resolve().parent / 'private' / 'papercut_software'
 # Device list from papercut
 DEVICES = Path(__file__).resolve().parent / 'private' / 'device_list.csv'
 # Admin-Generated device passwords list
-PASSWORDS = Path(__file__).resolve().parent / 'private' / 'device_passwords.csv'
+PASSWORDS = Path(__file__).resolve().parent / \
+    'private' / 'device_passwords.csv'
 # User's Home / Downloads folder for output
 DOWNLOADS = Path.home() / 'Downloads'
 
 
-
-
 class Bundle():
     """
-    Initialize objects and set name and group.
+    Initialize objects and set machine name and group.
     """
+
     def __init__(self, name, group):
         self.name = name
         self.group = group
-
-
-
 
     def get_password(self, passwords):
         """
@@ -55,8 +53,7 @@ class Bundle():
 
         return self
 
-
-    def create_package(self, config):  #TODO RENAME THIS TO GENERATE CONFIG
+    def create_package(self, config):  # TODO RENAME THIS TO GENERATE CONFIG
         """
         Generates 'config.properties' file with the needed information 
         for the specific machine. 
@@ -86,8 +83,6 @@ class Bundle():
 
         return self
 
-
-
     def zip_files(self):
         """
         Gets the contents of the 'papercut_software' folder (which should 
@@ -106,11 +101,10 @@ class Bundle():
 
         return self
 
-    
 
 def generate_batch():
     """
-    Main script - Reads the clean 'properties.config' file from the 'papercut_software' 
+    Main function - Reads the clean 'properties.config' file from the 'papercut_software' 
     folder and creates a working copy to use with the class methods so that a clean 
     copy can be used each loop or restored if something crashes and then calls the methods 
     to get all of the specific info, generate the config file, and then output the final, 
@@ -119,11 +113,10 @@ def generate_batch():
     # Read clean config file
     with open(f'{PAPERCUT / "config.properties"}', 'r') as config_file:
         clean_config = config_file.read()
-        # Make a working copy of the config        
+        # Make a working copy of the config
         working_config = copy.deepcopy(clean_config)
 
-
-    try:        
+    try:
         # Open the device list and set up a Dict reader
         with open(DEVICES, 'r') as device_list:
             # Skip extra header
@@ -132,49 +125,40 @@ def generate_batch():
 
             # Make a list of name and group from the CSV file, skipping SmartSDK Devices
             machine_info = [[line['Device'].replace('device\\', ''),
-                line['Device groups'].replace('registration', '').strip('|')]
-                for line in devices_csv if 'Smart' not in line['Device type']]
+                             line['Device groups'].replace('registration', '').strip('|')]
+                            for line in devices_csv if 'Smart' not in line['Device type']]
 
-        # Open the passwords file and set up a Dict Reader            
+        # Open the passwords file and set up a Dict Reader
         with open(PASSWORDS, 'r') as device_passwords:
             passwords_csv = csv.DictReader(device_passwords)
 
             # Generate a dictionary of the names and passowords to ease my life
-            password_info = {line['Device']: line['Password'] for line in passwords_csv}
+            password_info = {line['Device']: line['Password']
+                             for line in passwords_csv}
 
-
-        #NOTE: LOOP THROUGH MACHINES LIST   NOTE: STATUS? 
+        # Loop through the machines and display status bar
+        print(
+            f'\n Generating software packages for {len(machine_info)} machines...')
         for name, group in tqdm(machine_info):
 
-            #NOTE: CREATE OBJECT W/ ATTRS
+            # Set up objects
             machine = Bundle(name, group)
 
-            #NOTE: GET PW IF PRESENT
-            machine.get_password(password_info)
+            # Get password, generate config file, and output zip files
+            machine.get_password(password_info).create_package(
+                working_config).zip_files()
 
-            #NOTE: GEN PACKAGE
-            machine.create_package(working_config)
-
-            #NOTE: ZIP THE FILES
-            machine.zip_files()
-
-   
-
-            #NOTE: REST CLEAN CONFIG
+            # Restore clean 'config.properties' file for next time
             with open(PAPERCUT / 'config.properties', 'w') as restore_config:
                 restore_config.write(clean_config)
-            
 
-    #NOTE: EXEPTION IN CASE SOMETHING BREAKS
+    # Run if something crashes and restore clean 'config.properties' for next run
     except Exception as e:
         print(e)
-        
-        #NOTE: WRITE THE ORIGINAL CONFIG BACK IN CASE CHANGES WERE MADE
+
         with open(f'{PAPERCUT / "config.properties"}', 'w') as config_file:
             config_file.write(clean_config)
         print(' Clean config.properties file restored.')
-
-
 
 
 if __name__ == "__main__":
