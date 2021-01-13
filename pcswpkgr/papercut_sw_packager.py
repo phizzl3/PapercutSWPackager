@@ -1,4 +1,4 @@
-#! /usr/bin/env python3
+#!/usr/bin/env python3
 """
 Creates individual software bundles for installing PaperCut on RICOH MFD's 
 and outputs .zip files to the user's Home / Downloads folder. Each .zip 
@@ -13,7 +13,7 @@ import shutil
 from pathlib import Path
 
 from tqdm import tqdm
-
+# Includes needed variables
 from private import data
 
 # Get relative paths for files and folders needed (README.md)
@@ -22,8 +22,7 @@ PAPERCUT = Path(__file__).resolve().parent / 'private' / 'papercut_software'
 # Device list from papercut
 DEVICES = Path(__file__).resolve().parent / 'private' / 'device_list.csv'
 # Admin-Generated device passwords list
-PASSWORDS = Path(__file__).resolve().parent / \
-    'private' / 'device_passwords.csv'
+PASSWORDS = Path(__file__).resolve().parent / 'private' / 'device_passwords.csv'
 # User's Home / Downloads folder for output
 DOWNLOADS = Path.home() / 'Downloads'
 
